@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Álbum Virtual Panini</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <section id="pantalla-inicio" class="pantalla fondo-portada">
+    <div class="portada">
+      <h1>¡Bienvenid@ al Álbum de la Gira!</h1>
+      <button onclick="mostrarAlbum()">Entrar al Álbum</button>
+    </div>
+  </section>
+
+  <section id="pantalla-album" class="hidden">
+    <h1>Mi Álbum de la Gira ✨</h1>
+    <div id="laminas" class="grid"></div>
+    <div class="actions">
+      <button onclick="modoPresentacion()">🎬 Modo Presentación</button>
+      <button onclick="compartirAlbum()">📤 Compartir</button>
+    </div>
+  </section>
+
+  <div id="camera-modal" class="modal hidden">
+    <div class="modal-content">
+      <p id="titulo-lamina"></p>
+      <video id="video" autoplay playsinline></video>
+      <button onclick="capturarFoto()">📷 Capturar</button>
+      <input type="file" accept="image/*" onchange="subirDesdeGaleria(event)" />
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
