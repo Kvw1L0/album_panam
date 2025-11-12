@@ -4,7 +4,7 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
-  background-image: url('fondo.jpg');
+  background-image: url('fondo.png');
   background-size: cover;
   background-position: center;
   background-attachment: scroll;
