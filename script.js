@@ -10,67 +10,25 @@ const laminas = [
   "Una foto random"
 ];
 
-// Variables de estado
 let currentLamina = null;
 let currentCard = null;
 let stream = null;
-let bootstrapModal = null; // Inicia como null
 let currentFacingMode = 'user'; 
 
-// --- 2. DECLARAR variables de elementos (¡no asignar!) ---
-let contenedor;
-let modalElement;
-let video;
-let tituloLamina;
+// --- 2. Asignar variables de elementos ---
+// (Esto funciona porque el script está al final del <body>)
+const contenedor = document.getElementById('laminas');
+const modalElement = document.getElementById('camera-modal');
+const video = document.getElementById('video');
+const tituloLamina = document.getElementById('titulo-lamina');
 
+// Validar que los elementos existan
+if (!contenedor || !modalElement || !video || !tituloLamina) {
+    console.error("Error crítico: Faltan elementos esenciales del DOM. Revisa tu HTML.");
+    alert("Error al cargar la página. Refresca."); 
+}
 
-// 💡 --- ¡SOLUCIÓN DEFINITIVA AQUÍ! --- 💡
-// 'window.onload' espera a que TODO (incluyendo el JS de Bootstrap) se cargue.
-window.onload = function() {
-    
-    // 3. ASIGNAR variables de elementos
-    // En este punto, el HTML está 100% cargado.
-    contenedor = document.getElementById('laminas');
-    modalElement = document.getElementById('camera-modal');
-    video = document.getElementById('video');
-    tituloLamina = document.getElementById('titulo-lamina');
-
-    // 4. Validar elementos
-    if (!contenedor || !modalElement || !video || !tituloLamina) {
-        console.error("Error crítico: Faltan elementos esenciales del DOM. Revisa tu HTML.");
-        alert("Error al cargar la página. Refresca."); 
-        return;
-    }
-
-    // 5. Inicializar el modal
-    // En este punto, 'bootstrap' JS está 100% cargado.
-    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-        bootstrapModal = new bootstrap.Modal(modalElement, {
-            keyboard: false, 
-            backdrop: 'static'
-        });
-
-        // Añadir listeners al modal
-        modalElement.addEventListener('shown.bs.modal', () => {
-            currentFacingMode = 'user';
-            iniciarCamara(currentFacingMode);
-        });
-
-        modalElement.addEventListener('hidden.bs.modal', () => {
-            cerrarStream(); 
-        });
-        
-        console.log("Modal de Bootstrap inicializado con éxito (onLoad).");
-
-    } else {
-        alert("Error: No se pudo cargar la librería Bootstrap. Revisa tu conexión y refresca.");
-    }
-};
-// 💡 --- FIN DE LA SOLUCIÓN --- 💡
-
-
-// --- 6. El resto de las funciones permanecen globales ---
-// (Esto es necesario para que los 'onclick' del HTML funcionen)
+// --- 3. Funciones Globales ---
 
 function iniciarAlbum() {
   generarAlbum(); 
@@ -79,23 +37,25 @@ function iniciarAlbum() {
 }
 
 function generarAlbum() {
-    if (!contenedor) {
-        console.warn("generarAlbum llamado antes de que 'contenedor' esté listo.");
-        return;
-    }
-    if (contenedor.children.length > 0) return; // Evita duplicar
+    if (!contenedor) return;
+    if (contenedor.children.length > 0) return;
     
     laminas.forEach(titulo => {
+        // Usamos nuestras nuevas clases 'grid-col' y 'card'
         const colDiv = document.createElement('div');
-        colDiv.className = 'col mb-4';
+        colDiv.className = 'grid-col';
+        
         const cardDiv = document.createElement('div');
-        cardDiv.className = 'card h-100 mx-auto';
+        cardDiv.className = 'card';
+        
         const innerFrame = document.createElement('div');
         innerFrame.className = 'inner-frame';
+        
         const p = document.createElement('p');
         p.className = 'text-center';
         p.textContent = titulo;
 
+        // Listener de clic directo
         innerFrame.addEventListener('click', () => {
             abrirCamara(titulo, innerFrame); 
         });
@@ -130,7 +90,6 @@ async function iniciarCamara(facingMode) {
         video.onloadedmetadata = () => {
             video.play().catch(e => console.error("Fallo al reproducir el video:", e));
         };
-
     } catch (error) {
         console.error("Error al acceder a la cámara:", error);
         if (error.name === 'OverconstrainedError' && facingMode === 'environment') {
@@ -149,25 +108,32 @@ function cambiarCamara() {
     iniciarCamara(currentFacingMode);
 }
 
+// 💡 --- LÓGICA DEL MODAL SIMPLIFICADA --- 💡
 function abrirCamara(titulo, cardRef) {
   currentLamina = titulo;
   currentCard = cardRef;
   if (!tituloLamina) return;
   tituloLamina.textContent = titulo;
   
-  if (bootstrapModal) {
-      bootstrapModal.show();
+  // Simplemente mostramos el modal
+  if (modalElement) {
+      modalElement.classList.remove('hidden');
+      // Iniciamos la cámara manualmente
+      currentFacingMode = 'user';
+      iniciarCamara(currentFacingMode);
   } else {
-      // Este error ahora solo debería saltar si 'window.onload' falló
-      alert("Error: El modal no está inicializado. Refresca la página.");
+      alert("Error: No se encontró el modal.");
   }
 }
 
 function cerrarModal() {
-    if (bootstrapModal) {
-        bootstrapModal.hide();
+    // Escondemos el modal y apagamos la cámara
+    if (modalElement) {
+        modalElement.classList.add('hidden');
     }
+    cerrarStream(); // Apaga la cámara
 }
+// 💡 --- FIN DE LA LÓGICA DEL MODAL --- 💡
 
 function insertarImagen(dataUrl) {
   if (!currentCard) return;
