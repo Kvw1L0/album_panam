@@ -17,8 +17,38 @@ const tituloLamina = document.getElementById('titulo-lamina');
 let currentLamina = null;
 let currentCard = null;
 let stream = null;
-let bootstrapModal = null; // Inicia como null. Se inicializará al primer clic.
-let currentFacingMode = 'user'; // 'user' es la cámara frontal
+let bootstrapModal = null; // Inicia como null
+let currentFacingMode = 'user'; 
+
+// 💡 --- SOLUCIÓN: Usar 'DOMContentLoaded' --- 💡
+// Este evento se dispara DESPUÉS de que el HTML está listo y los scripts con 'defer' se han ejecutado.
+document.addEventListener('DOMContentLoaded', (event) => {
+    
+    // Ahora es 100% seguro inicializar el modal de Bootstrap
+    if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        
+        bootstrapModal = new bootstrap.Modal(modalElement, {
+            keyboard: false, 
+            backdrop: 'static'
+        });
+
+        // Añadimos los listeners que encienden/apagan la cámara
+        modalElement.addEventListener('shown.bs.modal', () => {
+            currentFacingMode = 'user';
+            iniciarCamara(currentFacingMode);
+        });
+
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            cerrarStream(); 
+        });
+
+    } else {
+        // Si falla aquí, el CDN de Bootstrap realmente no se cargó (mala conexión, etc.)
+        console.error("Error fatal: La librería de Bootstrap no se pudo cargar a tiempo.");
+    }
+});
+// 💡 --- FIN DE LA SOLUCIÓN --- 💡
+
 
 /**
  * Genera dinámicamente las tarjetas (marcos de fotos)
@@ -47,8 +77,8 @@ function generarAlbum() {
  * Inicia el álbum: genera las tarjetas y muestra el contenido.
  */
 function iniciarAlbum() {
-  generarAlbum(); // (Requisito 2)
-  document.getElementById('landing').classList.add('hidden'); // (Requisito 1)
+  generarAlbum(); 
+  document.getElementById('landing').classList.add('hidden'); 
   document.getElementById('contenido').classList.remove('hidden');
 }
 
@@ -100,77 +130,42 @@ async function iniciarCamara(facingMode) {
 }
 
 /**
- * Cambia entre la cámara frontal y trasera (Requisito 3)
+ * Cambia entre la cámara frontal y trasera
  */
 function cambiarCamara() {
     currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
     iniciarCamara(currentFacingMode);
 }
 
-// 💡 --- ¡AQUÍ ESTÁ LA CORRECCIÓN! --- 💡
-
 /**
- * Inicializa el modal de Bootstrap (si no lo está) y luego lo muestra.
- * Esto evita el error de que el script de Bootstrap no esté cargado.
- */
-function inicializarYMostrarModal() {
-    // 1. Si el modal AÚN NO se ha inicializado...
-    if (!bootstrapModal) {
-        // 2. Comprueba si la librería Bootstrap está LISTA AHORA.
-        if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-            
-            // 3. Inicializa el modal
-            bootstrapModal = new bootstrap.Modal(modalElement, {
-                keyboard: false, 
-                backdrop: 'static'
-            });
-
-            // 4. Añade los listeners AHORA
-            modalElement.addEventListener('shown.bs.modal', () => {
-                currentFacingMode = 'user';
-                iniciarCamara(currentFacingMode);
-            });
-
-            modalElement.addEventListener('hidden.bs.modal', () => {
-                cerrarStream(); 
-            });
-            
-        } else {
-            // Si Bootstrap sigue sin cargar, es un error fatal.
-            alert("Error: La librería de Bootstrap no se pudo cargar. Revisa la conexión a internet o refresca la página.");
-            return; // No continúa
-        }
-    }
-    
-    // 5. Si todo fue bien (o ya estaba inicializado), muestra el modal.
-    bootstrapModal.show();
-}
-
-
-/**
- * Prepara los datos para el modal y llama a la función de inicialización.
+ * Prepara los datos para el modal y lo muestra.
  */
 function abrirCamara(titulo, cardRef) {
   currentLamina = titulo;
   currentCard = cardRef;
   tituloLamina.textContent = titulo;
   
-  // Llama a la nueva función que maneja la inicialización
-  inicializarYMostrarModal();
+  // Ahora solo necesitamos chequear si el modal se inicializó correctamente
+  if (bootstrapModal) {
+      bootstrapModal.show();
+  } else {
+      // Si llegamos aquí, el 'DOMContentLoaded' falló en crear el modal.
+      // Este es el error que estás viendo.
+      alert("Error: La librería de Bootstrap no se pudo cargar. Revisa la conexión a internet o refresca la página.");
+  }
 }
 
 /**
- * Cierra el modal. La lógica de apagar la cámara se dispara por 'hidden.bs.modal'
+ * Cierra el modal.
  */
 function cerrarModal() {
-    // Solo intenta ocultar si el modal ha sido inicializado
     if (bootstrapModal) {
         bootstrapModal.hide();
     }
 }
 
 /**
- * Inserta la imagen capturada en el marco (Requisito 4)
+ * Inserta la imagen capturada en el marco
  */
 function insertarImagen(dataUrl) {
   if (!currentCard) return;
