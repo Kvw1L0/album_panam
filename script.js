@@ -1,3 +1,4 @@
+// Constantes globales
 const laminas = [
   "Mi mejor amig@",
   "En mi traje de gala",
@@ -14,17 +15,19 @@ const modalElement = document.getElementById('camera-modal');
 const video = document.getElementById('video');
 const tituloLamina = document.getElementById('titulo-lamina');
 
+// Variables globales
 let currentLamina = null;
 let currentCard = null;
 let stream = null;
-let bootstrapModal = null; // Inicia como null
+let bootstrapModal = null; 
 let currentFacingMode = 'user'; 
 
-// 💡 --- SOLUCIÓN: Usar 'DOMContentLoaded' --- 💡
-// Este evento se dispara DESPUÉS de que el HTML está listo y los scripts con 'defer' se han ejecutado.
+// 💡 --- ¡SOLUCIÓN DEFINITIVA! --- 💡
+// Espera a que el DOM esté listo y los scripts (defer) se hayan cargado.
 document.addEventListener('DOMContentLoaded', (event) => {
     
-    // Ahora es 100% seguro inicializar el modal de Bootstrap
+    // 1. ESTO SÍ VA DENTRO: Inicializar el modal.
+    // Para este punto, 'bootstrap' (del CDN) ya está cargado.
     if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
         
         bootstrapModal = new bootstrap.Modal(modalElement, {
@@ -32,7 +35,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             backdrop: 'static'
         });
 
-        // Añadimos los listeners que encienden/apagan la cámara
+        // 2. ESTO SÍ VA DENTRO: Añadir listeners al modal.
         modalElement.addEventListener('shown.bs.modal', () => {
             currentFacingMode = 'user';
             iniciarCamara(currentFacingMode);
@@ -43,12 +46,28 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
 
     } else {
-        // Si falla aquí, el CDN de Bootstrap realmente no se cargó (mala conexión, etc.)
         console.error("Error fatal: La librería de Bootstrap no se pudo cargar a tiempo.");
     }
-});
-// 💡 --- FIN DE LA SOLUCIÓN --- 💡
 
+    // 3. NO LLAMES a iniciarAlbum() aquí.
+    // ¡Dejar este espacio vacío es correcto!
+});
+// 💡 --- FIN DEL BLOQUE DOMContentLoaded --- 💡
+
+
+//
+// --- TODAS LAS FUNCIONES DEBEN ESTAR FUERA, EN EL ÁMBITO GLOBAL ---
+//
+
+/**
+ * Inicia el álbum: genera las tarjetas y muestra el contenido.
+ * Esta función es llamada por 'onclick' en el HTML.
+ */
+function iniciarAlbum() {
+  generarAlbum(); 
+  document.getElementById('landing').classList.add('hidden'); 
+  document.getElementById('contenido').classList.remove('hidden');
+}
 
 /**
  * Genera dinámicamente las tarjetas (marcos de fotos)
@@ -71,15 +90,6 @@ function generarAlbum() {
         colDiv.appendChild(cardDiv);
         contenedor.appendChild(colDiv);
     });
-}
-
-/**
- * Inicia el álbum: genera las tarjetas y muestra el contenido.
- */
-function iniciarAlbum() {
-  generarAlbum(); 
-  document.getElementById('landing').classList.add('hidden'); 
-  document.getElementById('contenido').classList.remove('hidden');
 }
 
 /**
@@ -145,13 +155,11 @@ function abrirCamara(titulo, cardRef) {
   currentCard = cardRef;
   tituloLamina.textContent = titulo;
   
-  // Ahora solo necesitamos chequear si el modal se inicializó correctamente
   if (bootstrapModal) {
       bootstrapModal.show();
   } else {
-      // Si llegamos aquí, el 'DOMContentLoaded' falló en crear el modal.
-      // Este es el error que estás viendo.
-      alert("Error: La librería de Bootstrap no se pudo cargar. Revisa la conexión a internet o refresca la página.");
+      // Este error solo debería saltar si el DOMContentLoaded falló.
+      alert("Error: El modal no está inicializado. Revisa la conexión o refresca.");
   }
 }
 
