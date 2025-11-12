@@ -17,31 +17,8 @@ const tituloLamina = document.getElementById('titulo-lamina');
 let currentLamina = null;
 let currentCard = null;
 let stream = null;
-let bootstrapModal = null;
-// Variable para rastrear la cámara (Requisito 3)
+let bootstrapModal = null; // Inicia como null. Se inicializará al primer clic.
 let currentFacingMode = 'user'; // 'user' es la cámara frontal
-
-// Inicializar el objeto Modal de Bootstrap
-if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-    bootstrapModal = new bootstrap.Modal(modalElement, {
-        keyboard: false, // No se puede cerrar con Esc
-        backdrop: 'static' // No se puede cerrar haciendo clic afuera
-    });
-
-    // 💡 SOLUCIÓN: Escuchar los eventos del modal
-    
-    // 1. Cuando el modal se HAYA MOSTRADO, encender la cámara.
-    modalElement.addEventListener('shown.bs.modal', () => {
-        // Iniciar con la cámara frontal por defecto
-        currentFacingMode = 'user';
-        iniciarCamara(currentFacingMode);
-    });
-
-    // 2. Cuando el modal se HAYA OCULTADO, apagar la cámara.
-    modalElement.addEventListener('hidden.bs.modal', () => {
-        cerrarStream(); // Función dedicada para apagar la cámara
-    });
-}
 
 /**
  * Genera dinámicamente las tarjetas (marcos de fotos)
@@ -93,16 +70,14 @@ async function iniciarCamara(facingMode) {
     cerrarStream(); // Apaga cualquier cámara anterior
 
     try {
-        // Pide el stream de video
         stream = await navigator.mediaDevices.getUserMedia({
             video: { 
-                facingMode: { exact: facingMode } // 'user' (frontal) o 'environment' (trasera)
+                facingMode: { exact: facingMode }
             }
         });
 
         video.srcObject = stream;
         
-        // Espera a que los metadatos carguen y LUEGO reproduce
         video.onloadedmetadata = () => {
             video.play().catch(e => {
                 console.error("Fallo al reproducir el video:", e);
@@ -113,16 +88,13 @@ async function iniciarCamara(facingMode) {
     } catch (error) {
         console.error("Error al acceder a la cámara:", error);
         
-        // Error común: El dispositivo no tiene la cámara solicitada (ej. pedir trasera en laptop)
         if (error.name === 'OverconstrainedError' && facingMode === 'environment') {
             alert("No se pudo acceder a la cámara trasera. Intentando con la cámara frontal.");
-            // Fallback: Si falla la trasera, intenta con la frontal
             currentFacingMode = 'user';
             iniciarCamara(currentFacingMode);
         } else {
-            // Error de permisos u otro
             alert("No se pudo acceder a la cámara. Revisa los permisos de tu navegador.");
-            cerrarModal(); // Cierra el modal si no hay permisos
+            cerrarModal(); 
         }
     }
 }
@@ -135,26 +107,66 @@ function cambiarCamara() {
     iniciarCamara(currentFacingMode);
 }
 
+// 💡 --- ¡AQUÍ ESTÁ LA CORRECCIÓN! --- 💡
+
 /**
- * Abre el modal. La lógica de la cámara se dispara por el evento 'shown.bs.modal'
+ * Inicializa el modal de Bootstrap (si no lo está) y luego lo muestra.
+ * Esto evita el error de que el script de Bootstrap no esté cargado.
+ */
+function inicializarYMostrarModal() {
+    // 1. Si el modal AÚN NO se ha inicializado...
+    if (!bootstrapModal) {
+        // 2. Comprueba si la librería Bootstrap está LISTA AHORA.
+        if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            
+            // 3. Inicializa el modal
+            bootstrapModal = new bootstrap.Modal(modalElement, {
+                keyboard: false, 
+                backdrop: 'static'
+            });
+
+            // 4. Añade los listeners AHORA
+            modalElement.addEventListener('shown.bs.modal', () => {
+                currentFacingMode = 'user';
+                iniciarCamara(currentFacingMode);
+            });
+
+            modalElement.addEventListener('hidden.bs.modal', () => {
+                cerrarStream(); 
+            });
+            
+        } else {
+            // Si Bootstrap sigue sin cargar, es un error fatal.
+            alert("Error: La librería de Bootstrap no se pudo cargar. Revisa la conexión a internet o refresca la página.");
+            return; // No continúa
+        }
+    }
+    
+    // 5. Si todo fue bien (o ya estaba inicializado), muestra el modal.
+    bootstrapModal.show();
+}
+
+
+/**
+ * Prepara los datos para el modal y llama a la función de inicialización.
  */
 function abrirCamara(titulo, cardRef) {
   currentLamina = titulo;
   currentCard = cardRef;
   tituloLamina.textContent = titulo;
   
-  if (bootstrapModal) {
-      bootstrapModal.show(); // (Requisito 3)
-  } else {
-      alert("Error: No se pudo cargar el modal.");
-  }
+  // Llama a la nueva función que maneja la inicialización
+  inicializarYMostrarModal();
 }
 
 /**
  * Cierra el modal. La lógica de apagar la cámara se dispara por 'hidden.bs.modal'
  */
 function cerrarModal() {
-    if (bootstrapModal) bootstrapModal.hide();
+    // Solo intenta ocultar si el modal ha sido inicializado
+    if (bootstrapModal) {
+        bootstrapModal.hide();
+    }
 }
 
 /**
@@ -182,7 +194,7 @@ function capturarFoto() {
   const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
   insertarImagen(dataUrl);
   
-  cerrarModal(); // Esto disparará el evento 'hidden' y apagará la cámara
+  cerrarModal(); 
 }
 
 /**
@@ -197,7 +209,7 @@ function subirDesdeGaleria(event) {
   };
   reader.readAsDataURL(file);
   
-  cerrarModal(); // Esto disparará el evento 'hidden'
+  cerrarModal(); 
 }
 
 // Funciones de utilidad (sin cambios)
