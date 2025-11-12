@@ -10,62 +10,78 @@ const laminas = [
 ];
 
 const contenedor = document.getElementById('laminas');
-const modalElement = document.getElementById('camera-modal'); // Referencia al div del modal
+const modalElement = document.getElementById('camera-modal'); 
 const video = document.getElementById('video');
 const tituloLamina = document.getElementById('titulo-lamina');
 
 let currentLamina = null;
 let currentCard = null;
 let stream = null;
-let bootstrapModal = null; // Variable para la instancia de Bootstrap Modal
+let bootstrapModal = null; 
 
 // Inicializar el objeto Modal de Bootstrap
-if (modalElement) {
+// Se debe inicializar tan pronto como sea posible, por eso se deja aquí.
+if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
     bootstrapModal = new bootstrap.Modal(modalElement, {
-        keyboard: false // Opcional: Evita cerrar con la tecla Esc
+        keyboard: false
+    });
+}
+
+/**
+ * 💡 SOLUCIÓN: Mover la generación de tarjetas aquí.
+ * Esta función es la que genera la estructura HTML de los marcos de fotos.
+ * Al estar dentro de iniciarAlbum, aseguramos que se ejecuta solo cuando
+ * el usuario entra al álbum.
+ */
+function generarAlbum() {
+    // Evita duplicar las tarjetas si se llama más de una vez
+    if (contenedor.children.length > 0) return; 
+    
+    laminas.forEach(titulo => {
+        // Se usa la estructura de columnas de Bootstrap (col)
+        const colDiv = document.createElement('div');
+        colDiv.className = 'col mb-4'; 
+        
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'card h-100 mx-auto'; 
+        
+        cardDiv.innerHTML = `
+          <div class="inner-frame" onclick="abrirCamara('${titulo}', this)">
+          </div>
+          <p class="text-center">${titulo}</p>
+        `;
+        
+        colDiv.appendChild(cardDiv);
+        contenedor.appendChild(colDiv);
     });
 }
 
 function iniciarAlbum() {
-  // Oculta la landing page y muestra el contenido principal (Punto 3)
+  // 1. Genera el HTML de las tarjetas
+  generarAlbum(); 
+
+  // 2. Oculta la landing page y muestra el contenido principal
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('contenido').classList.remove('hidden');
 }
 
-// Ya no se necesita esta función porque las tarjetas ya no van en diagonal (Punto 2)
-// function getRandomAngle() {
-//   const angles = [-8, -5, 0, 3, 5, 8];
-//   return angles[Math.floor(Math.random() * angles.length)];
-// }
 
-laminas.forEach(titulo => {
-  // Se usa la estructura de columnas de Bootstrap (col)
-  const colDiv = document.createElement('div');
-  colDiv.className = 'col mb-4'; // Añade margen inferior
-  
-  const cardDiv = document.createElement('div');
-  cardDiv.className = 'card h-100 mx-auto'; // Centra la tarjeta y da altura completa
-  // cardDiv.style.setProperty('--angle', getRandomAngle() + 'deg'); // Eliminado por el Punto 2
-  
-  cardDiv.innerHTML = `
-    <div class="inner-frame" onclick="abrirCamara('${titulo}', this)">
-    </div>
-    <p class="text-center">${titulo}</p>
-  `;
-  
-  colDiv.appendChild(cardDiv);
-  contenedor.appendChild(colDiv);
-});
+// --- El resto de las funciones se mantienen igual ---
 
 function abrirCamara(titulo, cardRef) {
   currentLamina = titulo;
   currentCard = cardRef;
   tituloLamina.textContent = titulo;
   
-  // Usa el método .show() de Bootstrap para mostrar el modal
   if (bootstrapModal) bootstrapModal.show();
   
-  navigator.mediaDevices.getUserMedia({ video: true })
+  // Detiene cualquier stream anterior para evitar errores
+  if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+  }
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
     .then(s => {
       stream = s;
       video.srcObject = stream;
@@ -79,10 +95,8 @@ function abrirCamara(titulo, cardRef) {
 }
 
 function cerrarModal() {
-    // Usa el método .hide() de Bootstrap para ocultar el modal
     if (bootstrapModal) bootstrapModal.hide();
     
-    // Detiene el stream de video
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
         stream = null;
@@ -103,14 +117,13 @@ function insertarImagen(dataUrl) {
 
 function capturarFoto() {
   const canvas = document.createElement('canvas');
-  // Asegúrate de que el video esté reproduciéndose antes de capturar
   canvas.width = video.videoWidth || 300; 
   canvas.height = video.videoHeight || 300;
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-  const dataUrl = canvas.toDataURL('image/jpeg'); // Mejor calidad para fotos
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9); // Mayor calidad
   insertarImagen(dataUrl);
   
-  cerrarModal(); // Cierra el modal y detiene la cámara
+  cerrarModal(); 
 }
 
 function subirDesdeGaleria(event) {
@@ -122,7 +135,7 @@ function subirDesdeGaleria(event) {
   };
   reader.readAsDataURL(file);
   
-  cerrarModal(); // Cierra el modal y detiene la cámara
+  cerrarModal(); 
 }
 
 function compartirAlbum() {
