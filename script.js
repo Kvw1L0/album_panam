@@ -1,3 +1,4 @@
+// --- 1. Definir constantes y variables de estado ---
 const laminas = [
   "Mi mejor amig@",
   "En mi traje de gala",
@@ -9,12 +10,6 @@ const laminas = [
   "Una foto random"
 ];
 
-// Constantes de elementos
-const contenedor = document.getElementById('laminas');
-const modalElement = document.getElementById('camera-modal');
-const video = document.getElementById('video');
-const tituloLamina = document.getElementById('titulo-lamina');
-
 // Variables de estado
 let currentLamina = null;
 let currentCard = null;
@@ -22,10 +17,31 @@ let stream = null;
 let bootstrapModal = null; 
 let currentFacingMode = 'user'; 
 
-// Espera a que el DOM esté listo y los scripts (defer) se hayan cargado.
+// --- 2. DECLARAR variables de elementos (¡no asignar!) ---
+let contenedor = null;
+let modalElement = null;
+let video = null;
+let tituloLamina = null;
+
+
+// --- 3. ASIGNAR variables e inicializar DENTRO de DOMContentLoaded ---
 document.addEventListener('DOMContentLoaded', (event) => {
     
-    // Inicializa el modal
+    // 3a. ¡Ahora SÍ asignamos las variables!
+    // En este punto, el <body> y todos sus elementos existen.
+    contenedor = document.getElementById('laminas');
+    modalElement = document.getElementById('camera-modal');
+    video = document.getElementById('video');
+    tituloLamina = document.getElementById('titulo-lamina');
+
+    // 3b. Validar que los elementos principales existan
+    if (!contenedor || !modalElement || !video || !tituloLamina) {
+        console.error("Error crítico: Faltan elementos esenciales del DOM. Revisa tu HTML.");
+        alert("Error al cargar la página. Refresca.");
+        return;
+    }
+
+    // 3c. Inicializar el modal (ahora modalElement no es null)
     if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
         
         bootstrapModal = new bootstrap.Modal(modalElement, {
@@ -33,7 +49,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             backdrop: 'static'
         });
 
-        // Añade listeners al modal para encender/apagar la cámara
+        // Añadir listeners al modal
         modalElement.addEventListener('shown.bs.modal', () => {
             currentFacingMode = 'user';
             iniciarCamara(currentFacingMode);
@@ -49,6 +65,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 
+// --- 4. El resto de las funciones permanecen globales ---
+// (Estas funciones son llamadas por 'onclick' o por otras funciones)
+
 /**
  * Inicia el álbum: genera las tarjetas y muestra el contenido.
  */
@@ -58,21 +77,20 @@ function iniciarAlbum() {
   document.getElementById('contenido').classList.remove('hidden');
 }
 
-
-// 💡 --- ¡SOLUCIÓN PRINCIPAL AQUÍ! --- 💡
 /**
  * Genera dinámicamente las tarjetas (marcos de fotos)
- * Reescrito para usar addEventListener en lugar de 'onclick' en innerHTML.
+ * Usa 'addEventListener' para seguridad y compatibilidad.
  */
 function generarAlbum() {
+    // 'contenedor' fue asignado en DOMContentLoaded
     if (!contenedor) {
-        console.error("Error: El 'contenedor' de láminas no se encontró.");
+        console.error("Error: El 'contenedor' de láminas es nulo.");
         return;
     }
     if (contenedor.children.length > 0) return; // Evita duplicar
     
     laminas.forEach(titulo => {
-        // 1. Crear los elementos
+        // Crear elementos
         const colDiv = document.createElement('div');
         colDiv.className = 'col mb-4';
         
@@ -86,41 +104,38 @@ function generarAlbum() {
         p.className = 'text-center';
         p.textContent = titulo;
 
-        // 2. Añadir el Event Listener (la forma robusta)
+        // Añadir el Event Listener
         innerFrame.addEventListener('click', () => {
-            // 'innerFrame' es la referencia al marco que se hizo clic
             abrirCamara(titulo, innerFrame); 
         });
 
-        // 3. Ensamblar los elementos
+        // Ensamblar
         cardDiv.appendChild(innerFrame);
         cardDiv.appendChild(p);
         colDiv.appendChild(cardDiv);
         contenedor.appendChild(colDiv);
     });
 }
-// 💡 --- FIN DE LA SOLUCIÓN --- 💡
-
 
 /**
- * Detiene el stream de video y limpia el elemento <video>
+ * Detiene el stream de video
  */
 function cerrarStream() {
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
         stream = null;
-        video.srcObject = null;
+        if (video) video.srcObject = null;
     }
 }
 
 /**
- * Función principal para iniciar la cámara (frontal o trasera)
+ * Inicia la cámara (frontal o trasera)
  */
 async function iniciarCamara(facingMode) {
-    cerrarStream(); // Apaga cualquier cámara anterior
+    cerrarStream(); 
 
     if (!video) {
-        console.error("Error: El elemento <video> no se encontró.");
+        console.error("Error: El elemento <video> es nulo.");
         return;
     }
 
@@ -170,7 +185,7 @@ function abrirCamara(titulo, cardRef) {
   currentCard = cardRef;
   
   if (!tituloLamina) {
-      console.error("Error: El elemento 'tituloLamina' no se encontró.");
+      console.error("Error: El elemento 'tituloLamina' es nulo.");
       return;
   }
   tituloLamina.textContent = titulo;
@@ -178,7 +193,7 @@ function abrirCamara(titulo, cardRef) {
   if (bootstrapModal) {
       bootstrapModal.show();
   } else {
-      alert("Error: El modal no está inicializado. Revisa la conexión o refresca.");
+      alert("Error: El modal no está inicializado. Refresca.");
   }
 }
 
