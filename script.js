@@ -10,67 +10,107 @@ const laminas = [
 ];
 
 const contenedor = document.getElementById('laminas');
-const modal = document.getElementById('camera-modal');
+const modalElement = document.getElementById('camera-modal'); // Referencia al div del modal
 const video = document.getElementById('video');
 const tituloLamina = document.getElementById('titulo-lamina');
 
 let currentLamina = null;
 let currentCard = null;
 let stream = null;
+let bootstrapModal = null; // Variable para la instancia de Bootstrap Modal
+
+// Inicializar el objeto Modal de Bootstrap
+if (modalElement) {
+    bootstrapModal = new bootstrap.Modal(modalElement, {
+        keyboard: false // Opcional: Evita cerrar con la tecla Esc
+    });
+}
 
 function iniciarAlbum() {
-  document.getElementById('portada').classList.add('hidden');
+  // Oculta la landing page y muestra el contenido principal (Punto 3)
+  document.getElementById('landing').classList.add('hidden');
   document.getElementById('contenido').classList.remove('hidden');
 }
 
-function getRandomAngle() {
-  const angles = [-8, -5, 0, 3, 5, 8];
-  return angles[Math.floor(Math.random() * angles.length)];
-}
+// Ya no se necesita esta función porque las tarjetas ya no van en diagonal (Punto 2)
+// function getRandomAngle() {
+//   const angles = [-8, -5, 0, 3, 5, 8];
+//   return angles[Math.floor(Math.random() * angles.length)];
+// }
 
 laminas.forEach(titulo => {
-  const div = document.createElement('div');
-  div.className = 'card';
-  div.style.setProperty('--angle', getRandomAngle() + 'deg');
-  div.innerHTML = `
+  // Se usa la estructura de columnas de Bootstrap (col)
+  const colDiv = document.createElement('div');
+  colDiv.className = 'col mb-4'; // Añade margen inferior
+  
+  const cardDiv = document.createElement('div');
+  cardDiv.className = 'card h-100 mx-auto'; // Centra la tarjeta y da altura completa
+  // cardDiv.style.setProperty('--angle', getRandomAngle() + 'deg'); // Eliminado por el Punto 2
+  
+  cardDiv.innerHTML = `
     <div class="inner-frame" onclick="abrirCamara('${titulo}', this)">
     </div>
-    <p>${titulo}</p>
+    <p class="text-center">${titulo}</p>
   `;
-  contenedor.appendChild(div);
+  
+  colDiv.appendChild(cardDiv);
+  contenedor.appendChild(colDiv);
 });
 
 function abrirCamara(titulo, cardRef) {
   currentLamina = titulo;
   currentCard = cardRef;
   tituloLamina.textContent = titulo;
-  modal.classList.remove('hidden');
+  
+  // Usa el método .show() de Bootstrap para mostrar el modal
+  if (bootstrapModal) bootstrapModal.show();
+  
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(s => {
       stream = s;
       video.srcObject = stream;
+      video.play();
+    })
+    .catch(error => {
+        console.error("Error al acceder a la cámara:", error);
+        alert("No se pudo acceder a la cámara. Asegúrate de dar los permisos.");
+        cerrarModal();
     });
+}
+
+function cerrarModal() {
+    // Usa el método .hide() de Bootstrap para ocultar el modal
+    if (bootstrapModal) bootstrapModal.hide();
+    
+    // Detiene el stream de video
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
 }
 
 function insertarImagen(dataUrl) {
   if (!currentCard) return;
+  // Limpia el contenido anterior antes de insertar la nueva imagen
+  currentCard.innerHTML = ''; 
+  
   const img = document.createElement('img');
   img.src = dataUrl;
   img.className = 'shrink-in';
-  if (currentCard.children.length < 3) {
-    currentCard.appendChild(img);
-  }
+  
+  currentCard.appendChild(img);
 }
 
 function capturarFoto() {
   const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  const dataUrl = canvas.toDataURL();
+  // Asegúrate de que el video esté reproduciéndose antes de capturar
+  canvas.width = video.videoWidth || 300; 
+  canvas.height = video.videoHeight || 300;
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL('image/jpeg'); // Mejor calidad para fotos
   insertarImagen(dataUrl);
-  modal.classList.add('hidden');
-  if (stream) stream.getTracks().forEach(track => track.stop());
+  
+  cerrarModal(); // Cierra el modal y detiene la cámara
 }
 
 function subirDesdeGaleria(event) {
@@ -81,8 +121,8 @@ function subirDesdeGaleria(event) {
     insertarImagen(e.target.result);
   };
   reader.readAsDataURL(file);
-  modal.classList.add('hidden');
-  if (stream) stream.getTracks().forEach(track => track.stop());
+  
+  cerrarModal(); // Cierra el modal y detiene la cámara
 }
 
 function compartirAlbum() {
