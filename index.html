@@ -14,14 +14,27 @@
 
 </head>
 <body>
+
   <div id="landing" class="landing-page d-flex flex-column align-items-center justify-content-center vh-100 text-white text-center">
+    <div class="p-4 rounded-3 bg-dark bg-opacity-75 shadow">
+        <h1 class="display-4 fw-bold mb-4">¡Bienvenid@ al Álbum de la Gira!</h1>
+        <p class="lead mb-4">Haz clic en la imagen para empezar a coleccionar tus recuerdos.</p>
+        <img src="album-icon.png" alt="Álbum de Fotos" class="img-fluid album-icon" onclick="iniciarAlbum()">
     </div>
+  </div>
 
   <div id="contenido" class="hidden container py-4">
+    <h1 class="text-white text-center mb-4">Mi Álbum de la Gira ✨</h1>
+    <div id="laminas" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 justify-content-center">
+      </div>
+    <div classs="actions text-center mt-5">
+      <button class="btn btn-dark btn-lg mx-2" onclick="modoPresentacion()">🎬 Modo Presentación</button>
+      <button class="btn btn-secondary btn-lg mx-2" onclick="compartirAlbum()">📤 Compartir</button>
     </div>
+  </div>
 
   <div id="camera-modal" class="modal" tabindex="-1">
     </div>
 
-  </body>
+</body>
 </html>
