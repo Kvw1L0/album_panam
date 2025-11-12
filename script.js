@@ -10,25 +10,41 @@ const laminas = [
   "Una foto random"
 ];
 
+// Variables de estado
 let currentLamina = null;
 let currentCard = null;
 let stream = null;
-let bootstrapModal = null; 
+let bootstrapModal = null; // Inicia como null
 let currentFacingMode = 'user'; 
 
-// --- 2. Asignar variables de elementos ---
-const contenedor = document.getElementById('laminas');
-const modalElement = document.getElementById('camera-modal');
-const video = document.getElementById('video');
-const tituloLamina = document.getElementById('titulo-lamina');
+// --- 2. DECLARAR variables de elementos (¡no asignar!) ---
+let contenedor;
+let modalElement;
+let video;
+let tituloLamina;
 
 
-// 💡 --- ¡SOLUCIÓN AQUÍ! --- 💡
-// Esta función intentará inicializar el modal. Si Bootstrap no está listo,
-// esperará 100ms y lo volverá a intentar.
-function intentarInicializarModal(intentosRestantes = 10) {
+// 💡 --- ¡SOLUCIÓN DEFINITIVA AQUÍ! --- 💡
+// 'window.onload' espera a que TODO (incluyendo el JS de Bootstrap) se cargue.
+window.onload = function() {
+    
+    // 3. ASIGNAR variables de elementos
+    // En este punto, el HTML está 100% cargado.
+    contenedor = document.getElementById('laminas');
+    modalElement = document.getElementById('camera-modal');
+    video = document.getElementById('video');
+    tituloLamina = document.getElementById('titulo-lamina');
+
+    // 4. Validar elementos
+    if (!contenedor || !modalElement || !video || !tituloLamina) {
+        console.error("Error crítico: Faltan elementos esenciales del DOM. Revisa tu HTML.");
+        alert("Error al cargar la página. Refresca."); 
+        return;
+    }
+
+    // 5. Inicializar el modal
+    // En este punto, 'bootstrap' JS está 100% cargado.
     if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-        // ¡Éxito! Bootstrap está cargado.
         bootstrapModal = new bootstrap.Modal(modalElement, {
             keyboard: false, 
             backdrop: 'static'
@@ -44,31 +60,17 @@ function intentarInicializarModal(intentosRestantes = 10) {
             cerrarStream(); 
         });
         
-        console.log("Modal de Bootstrap inicializado con éxito.");
+        console.log("Modal de Bootstrap inicializado con éxito (onLoad).");
 
-    } else if (intentosRestantes > 0) {
-        // Bootstrap no está listo. Reintentamos en 100ms.
-        console.log("Esperando a Bootstrap... reintento pendiente.");
-        setTimeout(() => intentarInicializarModal(intentosRestantes - 1), 100);
     } else {
-        // Fracaso total después de 10 intentos.
-        console.error("Error: No se pudo cargar la librería Bootstrap a tiempo.");
         alert("Error: No se pudo cargar la librería Bootstrap. Revisa tu conexión y refresca.");
     }
-}
-
-// --- 3. Validar elementos e INICIAR el intento de inicialización ---
-if (!contenedor || !modalElement || !video || !tituloLamina) {
-    console.error("Error crítico: Faltan elementos esenciales del DOM. Revisa tu HTML.");
-    alert("Error al cargar la página. Refresca."); 
-} else {
-    // En lugar de inicializar directamente, llamamos a nuestra función de reintento.
-    intentarInicializarModal();
-}
+};
 // 💡 --- FIN DE LA SOLUCIÓN --- 💡
 
 
-// --- 4. El resto de las funciones permanecen globales ---
+// --- 6. El resto de las funciones permanecen globales ---
+// (Esto es necesario para que los 'onclick' del HTML funcionen)
 
 function iniciarAlbum() {
   generarAlbum(); 
@@ -77,8 +79,11 @@ function iniciarAlbum() {
 }
 
 function generarAlbum() {
-    if (!contenedor) return;
-    if (contenedor.children.length > 0) return;
+    if (!contenedor) {
+        console.warn("generarAlbum llamado antes de que 'contenedor' esté listo.");
+        return;
+    }
+    if (contenedor.children.length > 0) return; // Evita duplicar
     
     laminas.forEach(titulo => {
         const colDiv = document.createElement('div');
@@ -153,8 +158,8 @@ function abrirCamara(titulo, cardRef) {
   if (bootstrapModal) {
       bootstrapModal.show();
   } else {
-      // Este es el error que estabas viendo.
-      alert("Error: El modal no está inicializado. Refresca.");
+      // Este error ahora solo debería saltar si 'window.onload' falló
+      alert("Error: El modal no está inicializado. Refresca la página.");
   }
 }
 
@@ -190,7 +195,6 @@ function subirDesdeGaleria(event) {
   reader.onload = function(e) {
     insertarImagen(e.target.result);
   };
-  // Corrección de un error tipográfico anterior (GURI -> DataURL)
   reader.readAsDataURL(file);
   cerrarModal(); 
 }
