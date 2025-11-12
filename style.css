@@ -1,7 +1,8 @@
+/* --- Estilos Base --- */
 body {
   font-family: sans-serif;
   margin: 0;
-  padding: 0; /* Bootstrap manejará el padding en el container */
+  padding: 0;
   text-align: center;
   background-image: url('fondo.png');
   background-size: cover;
@@ -13,82 +14,43 @@ h1 {
   margin-bottom: 20px;
   text-shadow: 2px 2px 4px #000;
 }
-/* La clase .grid ha sido reemplazada por las clases 'row' y 'col' de Bootstrap,
-   pero se mantiene por si se usa en JS, aunque ya no contiene las reglas flex. */
-
-/* La rotación de la tarjeta (diagonal) ha sido eliminada (Punto 2) */
-.card {
-  background: transparent;
-  position: relative;
-  transition: transform 0.2s ease-in-out;
-  /* width: 120px; - Ahora se maneja con las columnas de Bootstrap */
+.hidden {
+  display: none !important;
 }
-.inner-frame {
-  background: white;
-  border: 3px solid #6c757d; /* Borde gris de Bootstrap */
-  border-radius: 12px;
-  width: 100%; /* Ocupa el 100% de la columna */
-  height: 160px;
-  overflow: hidden;
-  position: relative;
+.container {
+  padding: 20px;
+}
+.text-center {
+  text-align: center;
+}
+
+/* --- Landing Page --- */
+.landing-page {
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: rgba(0,0,0,0.6);
 }
-.inner-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.card p {
-  font-size: 0.85em;
-  margin-top: 6px;
-  background-color: #f8f9fa; /* Color de fondo claro de Bootstrap */
-  color: #212529; /* Texto oscuro de Bootstrap */
-  padding: 4px;
-  border-radius: 6px;
-  font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-/* El modal ahora usa clases de Bootstrap, pero se mantienen estas para el video */
-video {
-  width: 100%;
-  max-width: 300px;
-  height: auto;
-  min-height: 200px;
+.landing-content {
+  padding: 20px;
   border-radius: 12px;
-  border: 3px solid black;
-  margin-bottom: 10px;
+  background: rgba(0,0,0,0.75);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
-.hidden {
-  display: none !important; /* Importante para que prevalezca */
+.display-4 {
+  font-size: 2.5em;
+  font-weight: bold;
+  margin-bottom: 1rem;
 }
-/* .actions usa ahora clases de margen/padding de Bootstrap */
-/* Los botones usan clases de Bootstrap */
-
-.shrink-in {
-  animation: shrink 0.4s ease-in-out;
-}
-@keyframes shrink {
-  0% { transform: scale(2); }
-  100% { transform: scale(1); }
-}
-
-/* Landing Page (Punto 3) */
-.landing-page {
-  /* Reemplaza la clase .portada anterior */
-  background: rgba(0,0,0,0.6); /* Superposición oscura para el fondo */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 10;
+.lead {
+  font-size: 1.2em;
+  margin-bottom: 1.5rem;
 }
 .album-icon {
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     object-fit: contain;
     border-radius: 10px;
     padding: 10px;
@@ -100,8 +62,146 @@ video {
     transform: scale(1.05);
 }
 
-/* Animaciones se mantienen */
-@keyframes fadein {
-  from { opacity: 0; transform: scale(0.95);}
-  to { opacity: 1; transform: scale(1);}
+/* --- Cuadrícula (Reemplazo de Bootstrap) --- */
+.grid-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px; /* Espacio entre tarjetas */
+}
+.grid-col {
+  /* Cada columna (tarjeta) ocupará ~45% en móvil, ~30% en tablet, ~20% en desktop */
+  flex-basis: calc(50% - 10px);
+}
+@media (min-width: 600px) {
+  .grid-col { flex-basis: calc(33.3% - 10px); }
+}
+@media (min-width: 900px) {
+  .grid-col { flex-basis: calc(20% - 10px); }
+}
+
+/* --- Tarjetas (Card) --- */
+.card {
+  background: transparent;
+  width: 100%; /* Ocupa el 100% de su .grid-col */
+}
+.inner-frame {
+  background: white;
+  border: 3px solid #ccc;
+  border-radius: 12px;
+  width: 100%;
+  padding-top: 133%; /* Proporción 3:4 (alto/ancho) */
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  cursor: pointer;
+}
+.inner-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.card p {
+  font-size: 0.9em;
+  margin-top: 8px;
+  background-color: #f8f9fa;
+  color: #212529;
+  padding: 4px;
+  border-radius: 6px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* --- Modal (Reemplazo de Bootstrap) --- */
+.modal {
+  display: flex; /* Se cambia a 'flex' con JS */
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  padding: 10px;
+  box-sizing: border-box;
+}
+.modal-content {
+  background: white;
+  color: black;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  position: relative;
+  width: 100%;
+  max-width: 400px; /* Límite de ancho */
+}
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 2em;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+}
+.modal-close:hover {
+  color: #333;
+}
+.modal-content video {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* --- Botones (Reemplazo de Bootstrap) --- */
+.actions {
+  text-align: center;
+  margin-top: 40px;
+}
+.btn, .btn-primary, .btn-secondary, .btn-outline {
+  font-size: 1em;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin: 5px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+.btn-primary:hover { background: #0056b3; }
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+.btn-secondary:hover { background: #5a6268; }
+.btn-outline {
+  background: transparent;
+  color: #007bff;
+  border: 2px solid #007bff;
+}
+.btn-outline:hover { background: #e7f3ff; }
+
+/* Animación */
+.shrink-in {
+  animation: shrink 0.4s ease-in-out;
+}
+@keyframes shrink {
+  0% { transform: scale(2); }
+  100% { transform: scale(1); }
 }
