@@ -1,4 +1,3 @@
-// Constantes globales
 const laminas = [
   "Mi mejor amig@",
   "En mi traje de gala",
@@ -10,24 +9,23 @@ const laminas = [
   "Una foto random"
 ];
 
+// Constantes de elementos
 const contenedor = document.getElementById('laminas');
 const modalElement = document.getElementById('camera-modal');
 const video = document.getElementById('video');
 const tituloLamina = document.getElementById('titulo-lamina');
 
-// Variables globales
+// Variables de estado
 let currentLamina = null;
 let currentCard = null;
 let stream = null;
 let bootstrapModal = null; 
 let currentFacingMode = 'user'; 
 
-// 💡 --- ¡SOLUCIÓN DEFINITIVA! --- 💡
 // Espera a que el DOM esté listo y los scripts (defer) se hayan cargado.
 document.addEventListener('DOMContentLoaded', (event) => {
     
-    // 1. ESTO SÍ VA DENTRO: Inicializar el modal.
-    // Para este punto, 'bootstrap' (del CDN) ya está cargado.
+    // Inicializa el modal
     if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
         
         bootstrapModal = new bootstrap.Modal(modalElement, {
@@ -35,7 +33,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             backdrop: 'static'
         });
 
-        // 2. ESTO SÍ VA DENTRO: Añadir listeners al modal.
+        // Añade listeners al modal para encender/apagar la cámara
         modalElement.addEventListener('shown.bs.modal', () => {
             currentFacingMode = 'user';
             iniciarCamara(currentFacingMode);
@@ -48,20 +46,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     } else {
         console.error("Error fatal: La librería de Bootstrap no se pudo cargar a tiempo.");
     }
-
-    // 3. NO LLAMES a iniciarAlbum() aquí.
-    // ¡Dejar este espacio vacío es correcto!
 });
-// 💡 --- FIN DEL BLOQUE DOMContentLoaded --- 💡
 
-
-//
-// --- TODAS LAS FUNCIONES DEBEN ESTAR FUERA, EN EL ÁMBITO GLOBAL ---
-//
 
 /**
  * Inicia el álbum: genera las tarjetas y muestra el contenido.
- * Esta función es llamada por 'onclick' en el HTML.
  */
 function iniciarAlbum() {
   generarAlbum(); 
@@ -69,28 +58,49 @@ function iniciarAlbum() {
   document.getElementById('contenido').classList.remove('hidden');
 }
 
+
+// 💡 --- ¡SOLUCIÓN PRINCIPAL AQUÍ! --- 💡
 /**
  * Genera dinámicamente las tarjetas (marcos de fotos)
+ * Reescrito para usar addEventListener en lugar de 'onclick' en innerHTML.
  */
 function generarAlbum() {
+    if (!contenedor) {
+        console.error("Error: El 'contenedor' de láminas no se encontró.");
+        return;
+    }
     if (contenedor.children.length > 0) return; // Evita duplicar
     
     laminas.forEach(titulo => {
+        // 1. Crear los elementos
         const colDiv = document.createElement('div');
         colDiv.className = 'col mb-4';
+        
         const cardDiv = document.createElement('div');
         cardDiv.className = 'card h-100 mx-auto';
         
-        cardDiv.innerHTML = `
-          <div class="inner-frame" onclick="abrirCamara('${titulo}', this)">
-          </div>
-          <p class="text-center">${titulo}</p>
-        `;
+        const innerFrame = document.createElement('div');
+        innerFrame.className = 'inner-frame';
         
+        const p = document.createElement('p');
+        p.className = 'text-center';
+        p.textContent = titulo;
+
+        // 2. Añadir el Event Listener (la forma robusta)
+        innerFrame.addEventListener('click', () => {
+            // 'innerFrame' es la referencia al marco que se hizo clic
+            abrirCamara(titulo, innerFrame); 
+        });
+
+        // 3. Ensamblar los elementos
+        cardDiv.appendChild(innerFrame);
+        cardDiv.appendChild(p);
         colDiv.appendChild(cardDiv);
         contenedor.appendChild(colDiv);
     });
 }
+// 💡 --- FIN DE LA SOLUCIÓN --- 💡
+
 
 /**
  * Detiene el stream de video y limpia el elemento <video>
@@ -108,6 +118,11 @@ function cerrarStream() {
  */
 async function iniciarCamara(facingMode) {
     cerrarStream(); // Apaga cualquier cámara anterior
+
+    if (!video) {
+        console.error("Error: El elemento <video> no se encontró.");
+        return;
+    }
 
     try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -153,12 +168,16 @@ function cambiarCamara() {
 function abrirCamara(titulo, cardRef) {
   currentLamina = titulo;
   currentCard = cardRef;
+  
+  if (!tituloLamina) {
+      console.error("Error: El elemento 'tituloLamina' no se encontró.");
+      return;
+  }
   tituloLamina.textContent = titulo;
   
   if (bootstrapModal) {
       bootstrapModal.show();
   } else {
-      // Este error solo debería saltar si el DOMContentLoaded falló.
       alert("Error: El modal no está inicializado. Revisa la conexión o refresca.");
   }
 }
