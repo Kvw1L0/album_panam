@@ -5,7 +5,6 @@ const laminas = [
   "Algo freak de la Gala",
   "Junto a Mi mesa",
   "En la pista de Baile",
-  "Actuando una película",
   "Mi Gala en una Foto"
 ];
 
