@@ -1,7 +1,7 @@
 body {
   font-family: sans-serif;
   margin: 0;
-  padding: 20px;
+  padding: 0; /* Bootstrap manejará el padding en el container */
   text-align: center;
   background-image: url('fondo.png');
   background-size: cover;
@@ -13,29 +13,28 @@ h1 {
   margin-bottom: 20px;
   text-shadow: 2px 2px 4px #000;
 }
-.grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-}
+/* La clase .grid ha sido reemplazada por las clases 'row' y 'col' de Bootstrap,
+   pero se mantiene por si se usa en JS, aunque ya no contiene las reglas flex. */
+
+/* La rotación de la tarjeta (diagonal) ha sido eliminada (Punto 2) */
 .card {
   background: transparent;
   position: relative;
-  transform: rotate(var(--angle, 0deg));
   transition: transform 0.2s ease-in-out;
-  width: 120px;
+  /* width: 120px; - Ahora se maneja con las columnas de Bootstrap */
 }
 .inner-frame {
   background: white;
-  border: 2px solid black;
-  border-radius: 10px;
-  width: 120px;
+  border: 3px solid #6c757d; /* Borde gris de Bootstrap */
+  border-radius: 12px;
+  width: 100%; /* Ocupa el 100% de la columna */
   height: 160px;
   overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  cursor: pointer;
 }
 .inner-frame img {
   width: 100%;
@@ -43,51 +42,32 @@ h1 {
   object-fit: cover;
 }
 .card p {
-  font-size: 0.75em;
+  font-size: 0.85em;
   margin-top: 6px;
-  background-color: white;
-  color: black;
-  padding: 2px;
+  background-color: #f8f9fa; /* Color de fondo claro de Bootstrap */
+  color: #212529; /* Texto oscuro de Bootstrap */
+  padding: 4px;
   border-radius: 6px;
   font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  text-align: center;
-}
+
+/* El modal ahora usa clases de Bootstrap, pero se mantienen estas para el video */
 video {
-  width: 300px;
-  height: 300px;
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  min-height: 200px;
   border-radius: 12px;
   border: 3px solid black;
   margin-bottom: 10px;
 }
 .hidden {
-  display: none;
+  display: none !important; /* Importante para que prevalezca */
 }
-.actions button {
-  margin: 8px;
-  background: #000;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
-  cursor: pointer;
-}
+/* .actions usa ahora clases de margen/padding de Bootstrap */
+/* Los botones usan clases de Bootstrap */
+
 .shrink-in {
   animation: shrink 0.4s ease-in-out;
 }
@@ -95,28 +75,32 @@ video {
   0% { transform: scale(2); }
   100% { transform: scale(1); }
 }
-.portada {
-  animation: fadein 1s ease-out;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background: rgba(0,0,0,0.6);
+
+/* Landing Page (Punto 3) */
+.landing-page {
+  /* Reemplaza la clase .portada anterior */
+  background: rgba(0,0,0,0.6); /* Superposición oscura para el fondo */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
 }
-.portada h1 {
-  font-size: 2em;
-  margin-bottom: 20px;
+.album-icon {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: white;
+    cursor: pointer;
+    transition: transform 0.3s;
 }
-.portada button {
-  background: white;
-  color: black;
-  font-size: 1em;
-  padding: 12px 24px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
+.album-icon:hover {
+    transform: scale(1.05);
 }
+
+/* Animaciones se mantienen */
 @keyframes fadein {
   from { opacity: 0; transform: scale(0.95);}
   to { opacity: 1; transform: scale(1);}
