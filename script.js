@@ -1,9 +1,9 @@
 // --- 1. Definir constantes y variables de estado ---
 const laminas = [
   "En mi traje de Gala",
-  "Una foto random",
-  "Algo freak de la Gala",
-  "Junto a Mi mesa",
+  "Con mi líder favorito",
+  "Con un reconocido 2025",
+  "Junto a La mesa de la noche",
   "En la pista de Baile",
   "Mi Gala en una Foto"
 ];
